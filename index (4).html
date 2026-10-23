@@ -1,0 +1,971 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Vencimento mensal</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light;
+  --bg:#F3F5F8; --surface:#FFFFFF; --ink:#18212F; --muted:#5B6676; --line:#DCE2EA; --soft:#EEF2F7;
+  --accent:#1D4F91; --pos:#157347; --neg:#B3261E;
+  --m-bg:#FFF0C7; --m-ink:#7A4E00;
+  --t-bg:#D6F1E7; --t-ink:#0D6148;
+  --n-bg:#DFE4FB; --n-ink:#2B3A99;
+  --f-bg:#FDE1DE; --f-ink:#B3261E;
+  --v-bg:#ECE3F8; --v-ink:#6A3FA3;
+  --field:#FFFFFF; --hl:#EAF0F8; --hover-line:#B9C3D0; --on-accent:#FFFFFF;
+  --warn-bg:#FFF8E1; --warn-line:#F1D98A; --backdrop:rgba(24,33,47,.45);
+  --m-line:#E2B84D; --t-line:#6CC4A6; --n-line:#8C9BE6; --v-line:#A88BD6;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-variant-numeric:tabular-nums}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+h1{font-size:1.45rem;font-weight:700;margin:0;letter-spacing:-.01em}
+h2{font-size:1.05rem;font-weight:600;margin:0 0 12px}
+button{font:inherit;color:inherit;cursor:pointer}
+.btn{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:7px 12px}
+.btn:hover{border-color:var(--hover-line)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.danger{color:var(--neg)}
+.btn.primary.danger{background:var(--neg);border-color:var(--neg);color:var(--on-accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+.monthnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.monthnav .label{font-weight:700;font-size:1.1rem}
+.monthnav .btn{width:40px;height:40px;padding:0}
+.net{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px}
+.net .v{font-size:2rem;font-weight:700;color:var(--pos)}
+.banner{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:12px 14px;margin-bottom:14px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+
+/* Escala */
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.grid{border-collapse:collapse;font-size:12px;width:100%;table-layout:fixed}
+table.grid + table.grid{margin-top:10px}
+.grid th,.grid td{border:1px solid var(--line);padding:3px 1px;text-align:center;height:28px;overflow:hidden;white-space:nowrap}
+.grid th:first-child,.grid td:first-child{background:var(--soft);text-align:left;padding:3px 6px;width:84px;font-weight:500}
+.grid .dnum{font-weight:600}
+.grid .wd{color:var(--muted);font-size:12px}
+.grid td.cut{border-right:2px solid var(--accent)}
+.grid .col-M{background:var(--m-bg);color:var(--m-ink)}
+.grid .col-T{background:var(--t-bg);color:var(--t-ink)}
+.grid .col-N{background:var(--n-bg);color:var(--n-ink)}
+.grid .col-H{background:var(--f-bg)!important;color:var(--f-ink)!important}
+.grid .col-V{background:var(--v-bg);color:var(--v-ink)}
+.shift{width:100%;max-width:30px;height:28px;border-radius:6px;border:1px solid var(--line);background:var(--field);color:var(--ink);font-weight:700;padding:0}
+.shift.s-M{border-color:var(--m-line);color:var(--m-ink)}
+.shift.s-T{border-color:var(--t-line);color:var(--t-ink)}
+.shift.s-N{border-color:var(--n-line);color:var(--n-ink)}
+.shift.s-H{border-color:var(--f-ink)}
+.shift.s-V{border-color:var(--v-line);color:var(--v-ink)}
+.grid td.val{font-weight:600;font-size:10.5px;cursor:pointer;letter-spacing:-.03em;padding:3px 0;text-overflow:clip}
+.grid td.val.unpaid{color:var(--muted)!important;text-decoration:line-through;font-weight:400}
+.grid td.val.partial{box-shadow:inset 3px 0 0 var(--muted)}
+.grid td.val.ov{text-decoration:underline dotted;text-underline-offset:3px}
+.grid input[type=checkbox]{width:16px;height:16px;margin:0}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+.hint{color:var(--muted);font-size:13px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px;background:var(--c)}
+
+/* Tabelas de valores */
+table.list{width:100%;border-collapse:collapse;font-size:14px}
+.list td{border:1px solid var(--line);padding:7px 10px}
+.list td:last-child{text-align:right;white-space:nowrap;width:1%}
+.list tr.sum td{background:var(--hl);font-weight:700}
+.list tr.minus td:last-child{color:var(--neg)}
+.list tr.sub td{color:var(--muted)}
+.summary{margin-top:12px}
+.inline-in{width:84px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;font:inherit;text-align:right}
+.irsbox{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
+.link{background:none;border:0;color:var(--accent);padding:0;text-decoration:underline;font-size:13px}
+
+/* Perguntas e avisos */
+dialog.small{width:min(420px,92vw)}
+.ask{padding:18px;display:flex;flex-direction:column;gap:14px}
+.ask p{margin:0}
+.ask-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;z-index:50;max-width:min(520px,calc(100vw - 32px))}
+textarea.backup{width:100%;min-height:90px;font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--field);color:var(--ink);resize:vertical}
+
+/* Tabela do ano */
+.yearhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.yearhead h2{margin:0}
+.yearhead select{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--field);color:var(--ink)}
+table.year{width:100%;border-collapse:collapse;font-size:13px;white-space:nowrap}
+.year th{font-weight:600;text-align:right;padding:8px 6px;border-bottom:1px solid var(--line)}
+.year td{text-align:right;padding:7px 6px;border-bottom:1px solid var(--line)}
+.year th:first-child,.year td:first-child{text-align:left}
+.year tbody tr{cursor:pointer}
+.year tbody tr:hover{background:var(--soft)}
+.year tr.cur{background:var(--hl)}
+.year td.liq{color:var(--pos);font-weight:700}
+.year tfoot td{font-weight:700;border-top:2px solid var(--line);border-bottom:0}
+
+/* Definições */
+dialog{border:0;border-radius:14px;padding:0;background:var(--surface);width:min(860px,96vw);max-height:92vh;color:var(--ink)}
+dialog::backdrop{background:var(--backdrop)}
+.dlg-head{position:sticky;top:0;background:var(--surface);padding:14px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;z-index:2}
+.dlg-body{padding:6px 18px 18px}
+.dlg-foot{position:sticky;bottom:0;background:var(--surface);padding:12px 18px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px}
+fieldset{border:1px solid var(--line);border-radius:10px;margin:14px 0 0;padding:12px 14px}
+legend{font-weight:600;padding:0 6px}
+.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px 16px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+label.f input,label.f select{font:inherit;color:var(--ink);padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--field)}
+label.chk{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);margin-top:6px}
+label.f input:disabled{background:var(--soft);color:var(--muted)}
+.rows .row.hnrow{grid-template-columns:1fr 130px auto 36px}
+label.chk.hn{margin:0;white-space:nowrap}
+.rows .row{display:grid;grid-template-columns:1fr 130px 36px;gap:8px;margin-bottom:8px}
+.rows input{font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:8px;min-width:0}
+.rows .row input:nth-child(2){text-align:right}
+.x{border:1px solid var(--line);background:var(--field);color:var(--ink);border-radius:8px}
+table.shiftcfg{border-collapse:collapse;font-size:13px}
+.shiftcfg th,.shiftcfg td{border:1px solid var(--line);padding:5px;text-align:center}
+.shiftcfg input[type=text]{width:52px;padding:4px;border:1px solid var(--line);border-radius:6px;font:inherit;text-align:right}
+.shiftcfg label{display:flex;align-items:center;gap:3px;justify-content:center;font-size:12px;color:var(--muted);margin-top:3px}
+.preview{display:flex;gap:3px;flex-wrap:wrap;margin-top:8px}
+.preview span{width:26px;height:26px;border-radius:5px;display:grid;place-items:center;font-size:12px;font-weight:700;border:1px solid var(--line);background:var(--field)}
+.preview .p-M{background:var(--m-bg);color:var(--m-ink)}.preview .p-T{background:var(--t-bg);color:var(--t-ink)}.preview .p-N{background:var(--n-bg);color:var(--n-ink)}
+.note{font-size:13px;color:var(--muted);margin:6px 0 0}
+@media (max-width:600px){
+  .wrap{padding-block:14px 40px}
+  .net .v{font-size:1.6rem}
+  .rows .row{grid-template-columns:1fr 96px 36px}
+  .rows .row.hnrow{grid-template-columns:1fr 96px 36px}
+  .rows .row.hnrow .hn{grid-column:1 / span 2;grid-row:2}
+}
+@media print{.toolbar,.btn,header .btn{display:none}}
+</style>
+<div class="wrap">
+  <header class="top">
+    <h1>Vencimento mensal</h1>
+    <button class="btn" id="openCfg">Definições</button>
+  </header>
+
+  <div id="setupBanner" class="banner" hidden>
+    <span>Para começar, abra as definições e preencha as componentes do seu recibo, os descontos fixos, a situação de IRS e a sua rotação. Os dados ficam guardados só neste navegador.</span>
+    <button class="btn primary" id="openCfg2">Abrir definições</button>
+  </div>
+
+  <div class="monthnav">
+    <button class="btn" id="prev" aria-label="Mês anterior">&lt;</button>
+    <div class="label" id="monthLabel"></div>
+    <button class="btn" id="next" aria-label="Mês seguinte">&gt;</button>
+  </div>
+
+  <section class="card net">
+    <span>Líquido a receber</span>
+    <span class="v" id="netValue"></span>
+  </section>
+
+  <section class="card">
+    <h2>Escala do mês</h2>
+    <div id="grid"></div>
+    <div class="toolbar">
+      <div class="legend">
+        <span style="--c:var(--m-bg)">Manhã</span>
+        <span style="--c:var(--t-bg)">Tarde</span>
+        <span style="--c:var(--n-bg)">Noite</span>
+        <span style="--c:var(--v-bg)">Férias</span>
+        <span style="--c:var(--f-bg)">Feriado trabalhado</span>
+      </div>
+    </div>
+    <p class="hint">Clique no turno para mudar (— → M → T → N → F de férias). No teclado também pode usar as letras M, T, N e F. As horas noturnas riscadas são as primeiras <span id="hintIsentas">30</span> h do mês, que não são pagas. Num feriado trabalhado as horas noturnas não contam. Clique nas horas noturnas ou no transporte de um dia para os alterar só nesse dia; os valores alterados ficam sublinhados.</p>
+    <div class="toolbar">
+      <button class="btn" id="resetMonth">Repor a rotação neste mês</button>
+    </div>
+    <table class="list summary" id="splitTable"></table>
+  </section>
+
+  <section class="card">
+    <h2 id="payTitle"></h2>
+    <table class="list" id="payTable"></table>
+    <p class="note" id="irsNote"></p>
+  </section>
+
+  <section class="card">
+    <div class="yearhead"><h2>Tabela do ano</h2>
+      <select id="yearSel" aria-label="Ano"></select></div>
+    <div class="scroll"><table class="year" id="yearTable"></table></div>
+    <p class="note">Clique num mês para ver e editar a escala. O transporte, as horas noturnas e os feriados aparecem no mês em que são pagos.</p>
+  </section>
+</div>
+
+<dialog id="ask" class="small">
+  <form method="dialog" class="dlg-body ask">
+    <p id="askText"></p>
+    <label class="f" id="askField" hidden><span id="askLabel"></span><input id="askInput" inputmode="decimal" autocomplete="off"></label>
+    <div class="ask-actions">
+      <button class="btn" value="cancel" id="askCancel">Cancelar</button>
+      <button class="btn" value="alt" id="askAlt" hidden></button>
+      <button class="btn primary" value="ok" id="askOk">Confirmar</button>
+    </div>
+  </form>
+</dialog>
+<div id="toast" role="status" aria-live="polite" hidden></div>
+
+<dialog id="cfg">
+  <div class="dlg-head"><h2 style="margin:0">Definições</h2><button class="btn" id="closeCfg">Fechar</button></div>
+  <div class="dlg-body" id="cfgBody"></div>
+  <div class="dlg-foot"><button class="btn" id="cancelCfg">Cancelar</button><button class="btn primary" id="saveCfg">Guardar definições</button></div>
+</dialog>
+
+<script>
+"use strict";
+/* ===================== Tabelas de retenção na fonte (Continente) =====================
+   Despacho n.º 233-A/2026. Para um ano novo, acrescente aqui as tabelas desse ano
+   com a mesma estrutura. Cada linha: [limite, taxa, parcela a abater].
+   Uma parcela pode ser uma função da remuneração R. */
+const IRS_TABELAS = {
+  2026: {
+    I: { dep: 21.43, rows: [
+      [920, 0, 0],
+      [1042, .125, R => .125 * 2.6 * (1273.85 - R)],
+      [1108, .157, R => .157 * 1.35 * (1554.83 - R)],
+      [1154, .157, 94.71], [1212, .212, 158.18], [1819, .241, 193.33],
+      [2119, .311, 320.66], [2499, .349, 401.19], [3305, .3836, 487.66],
+      [5547, .3969, 531.62], [20221, .4495, 823.40], [Infinity, .4717, 1272.31] ] },
+    II: { dep: 34.29, rows: null }, // mesmas linhas da tabela I
+    III: { dep: 42.86, rows: [
+      [991, 0, 0],
+      [1042, .125, R => .125 * 2.6 * (1372.15 - R)],
+      [1108, .125, R => .125 * 1.35 * (1677.85 - R)],
+      [1119, .125, 96.17], [1432, .1272, 98.64], [1962, .157, 141.32],
+      [2240, .1938, 213.53], [2773, .2277, 289.47], [3389, .257, 370.72],
+      [5965, .2881, 476.12], [20265, .3843, 1049.96], [Infinity, .4717, 2821.13] ] }
+  }
+};
+IRS_TABELAS[2026].II.rows = IRS_TABELAS[2026].I.rows;
+Object.assign(IRS_TABELAS[2026], {
+  IV: { dep: 0, rows: [
+    [1694, 0, 0], [2063, .212, 359.13], [2492, .311, 563.37], [4487, .349, 658.07],
+    [4753, .3836, 813.33], [6687, .3969, 876.55], [20468, .4495, 1228.29], [Infinity, .4717, 1682.68] ] },
+  V: { dep: 42.86, rows: [
+    [1938, 0, 0], [2063, .2132, 413.19], [2854, .311, 614.96], [4504, .349, 723.42],
+    [6826, .3836, 879.26], [7048, .3969, 970.05], [20468, .4495, 1340.78], [Infinity, .4717, 1795.17] ] },
+  VI: { dep: 21.43, rows: [
+    [1668, 0, 0], [2068, .2049, 341.78], [2497, .241, 416.44], [3107, .311, 591.23], [4504, .349, 709.30],
+    [6826, .3836, 865.14], [7048, .3969, 955.93], [20468, .4495, 1326.66], [Infinity, .4717, 1781.05] ] },
+  VII: { dep: 42.86, rows: [
+    [2325, 0, 0], [3494, .2277, 529.41], [3761, .257, 631.79], [6687, .2881, 748.76],
+    [20468, .4244, 1660.20], [Infinity, .4717, 2628.34] ] }
+});
+/* Reduções extraordinárias da retenção num mês concreto ("AAAA-MM").
+   Não se aplicam a remunerações acima do limite superior do penúltimo escalão da tabela. */
+const IRS_REDUCOES = {
+  "2026-11": { fator: 0.5, nome: "Despacho n.º 12523-A/2026" }
+};
+/* Valores adicionais (n.º 5 do despacho) */
+const IRS_EXTRA = { depDef: {nao_casado:84.82, casado1:84.82, casado2:42.41}, depDefMax: {nao_casado:3, casado1:3, casado2:6}, conjugeDef: 135.71 };
+const TABELA_NOMES = {
+  I:"Tabela I: não casado sem dependentes ou casado dois titulares", II:"Tabela II: não casado com dependentes",
+  III:"Tabela III: casado, único titular", IV:"Tabela IV: não casado ou casado dois titulares, sem dependentes, pessoa com deficiência",
+  V:"Tabela V: não casado com dependentes, pessoa com deficiência", VI:"Tabela VI: casado dois titulares com dependentes, pessoa com deficiência",
+  VII:"Tabela VII: casado único titular, pessoa com deficiência" };
+
+const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+const DOW = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+const DOW_ORDER = [1,2,3,4,5,6,0];
+const SHIFTS = ["M","T","N"];
+const SHIFT_NAMES = {M:"Manhã",T:"Tarde",N:"Noite",F:"Férias"};
+const STORE_KEY = "vencimento-app-v1";
+
+function defaultState(){
+  const all = (h,t) => Array.from({length:7}, () => ({h,t}));
+  const M = all(0.5,true);
+  return {
+    v:4,
+    cfg:{
+      fixos:[{nome:"Vencimento base", valor:0}, {nome:"Adicional de função", valor:0}, {nome:"Anuidades", valor:0},
+             {nome:"Subsídio de turno", valor:0, hn:false}, {nome:"Remuneração adicional LH", valor:0}],
+      horaNoturna:0, horasIsentas:30, valorFeriado:0,
+      auto:{horaNoturna:true, feriado:true},
+      formulas:{horasSemana:37.5, diasSemana:5, pctNoturno:100, multFeriado:2},
+      transporte:20.8, alimentacao:10.46, diaCorte:20, diaCorteFeriados:20, ss:11,
+      descontos:[{nome:"Seguro de saúde", valor:0}, {nome:"Sindicato", valor:0}, {nome:"Clube TAP", valor:0}],
+      irsMetodo:{truncar:true, feriadoHE:true, recalcular:true},
+      irs:{estado:"nao_casado", dependentes:0, deficiente:false, depDeficientes:0, fatorDepDef:1, conjugeDef:false, taxaOpcional:null},
+      turnos:{M, T:all(3.25,false), N:all(7.5,true)},
+      rotacao:{padrao:"", inicio:""},
+      feriados:{municipal:"13/06", carnaval:false},
+      subsidios:{modo:"inteiro", ferias:{valor:null, mes:6}, natal:{valor:null, mes:11}}
+    },
+    dias:{}, meses:{}
+  };
+}
+
+let state = load();
+let view = (() => { const d = new Date(); return {y:d.getFullYear(), m:d.getMonth()}; })();
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(!raw) return defaultState();
+    const s = JSON.parse(raw), d = defaultState();
+    s.cfg = Object.assign(d.cfg, s.cfg || {});
+    const d0 = defaultState().cfg;
+    s.cfg.subsidios = Object.assign(d0.subsidios, s.cfg.subsidios || {});
+    s.cfg.formulas = Object.assign(d0.formulas, s.cfg.formulas || {});
+    s.cfg.irsMetodo = Object.assign(d0.irsMetodo, s.cfg.irsMetodo || {});
+    if((s.v||1) < 2){ if(+s.cfg.formulas.horasSemana === 40) s.cfg.formulas.horasSemana = 37.5; s.v = 2; }
+    if(s.v < 3){
+      // a manhã de sábado deixou de ter exceção (3,25 h e sem transporte): passa a ser igual às outras manhãs
+      const sab = s.cfg.turnos && s.cfg.turnos.M && s.cfg.turnos.M[6];
+      if(sab && +sab.h === 3.25 && sab.t === false) s.cfg.turnos.M[6] = {h:0.5, t:true};
+      s.v = 3;
+    }
+    if(s.v < 4){
+      // a taxa de IRS deixou de poder ser escrita à mão: apagam-se as taxas manuais guardadas
+      Object.values(s.meses).forEach(mm => { delete mm.irsPct; });
+      s.v = 4;
+    }
+    if(!s.cfg.auto) s.cfg.auto = {horaNoturna: !s.cfg.horaNoturna, feriado: !s.cfg.valorFeriado};
+    const oi = s.cfg.irs || {};
+    if(oi.tabela && !oi.estado) oi.estado = oi.tabela === "III" ? "casado1" : "nao_casado";
+    delete oi.tabela;
+    s.cfg.irs = Object.assign(d0.irs, oi);
+    s.dias = s.dias || {}; s.meses = s.meses || {};
+    return s;
+  }catch(e){ return defaultState(); }
+}
+function save(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+  catch(e){ toast("Este navegador não deixou gravar os dados. Copie a cópia de segurança nas definições para não os perder."); }
+}
+let toastTimer = null;
+function toast(msg){
+  const t = document.getElementById("toast"); t.textContent = msg; t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 4500);
+}
+/* Pergunta numa janela da própria página. opts: {ok, alt, field:{label,value}} ; cb(resposta, valor) */
+function ask(text, opts, cb){
+  const d = document.getElementById("ask");
+  document.getElementById("askText").textContent = text;
+  document.getElementById("askOk").textContent = opts.ok || "Confirmar";
+  document.getElementById("askOk").classList.toggle("danger", !!opts.danger);
+  const alt = document.getElementById("askAlt"); alt.hidden = !opts.alt; alt.textContent = opts.alt || "";
+  const fld = document.getElementById("askField"), inp = document.getElementById("askInput");
+  fld.hidden = !opts.field;
+  if(opts.field){ document.getElementById("askLabel").textContent = opts.field.label; inp.value = opts.field.value || ""; }
+  d.returnValue = "cancel";
+  d.onclose = () => { d.onclose = null; if(d.returnValue !== "cancel") cb(d.returnValue, inp.value); };
+  d.showModal();
+  if(opts.field) setTimeout(() => { inp.focus(); inp.select(); }, 0);
+}
+
+/* ---------- utilitários ---------- */
+const r2 = x => Math.round((x + Number.EPSILON) * 100) / 100;
+const eur = x => r2(x).toLocaleString("pt-PT",{minimumFractionDigits:2,maximumFractionDigits:2}) + " €";
+const num = x => r2(x).toLocaleString("pt-PT",{maximumFractionDigits:2});
+const parseNum = s => { const v = parseFloat(String(s).replace(/\s/g,"").replace(",", ".")); return isFinite(v) ? v : 0; };
+const pad = n => String(n).padStart(2,"0");
+const keyOf = (y,m,d) => `${y}-${pad(m+1)}-${pad(d)}`;
+const monthKey = (y,m) => `${y}-${pad(m+1)}`;
+const daysIn = (y,m) => new Date(Date.UTC(y,m+1,0)).getUTCDate();
+const dowOf = (y,m,d) => new Date(Date.UTC(y,m,d)).getUTCDay();
+const prevMonth = (y,m) => m === 0 ? {y:y-1,m:11} : {y, m:m-1};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ---------- feriados ---------- */
+function easter(y){
+  const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),
+        h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),
+        month=Math.floor((h+l-7*m+114)/31),day=((h+l-7*m+114)%31)+1;
+  return Date.UTC(y,month-1,day);
+}
+const holidayCache = {};
+function holidays(y){
+  if(holidayCache[y]) return holidayCache[y];
+  const set = new Set(["01-01","04-25","05-01","06-10","08-15","10-05","11-01","12-01","12-08","12-25"]);
+  const add = ms => { const d = new Date(ms); set.add(`${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`); };
+  const e = easter(y), day = 86400000;
+  add(e - 2*day); add(e); add(e + 60*day);
+  if(state.cfg.feriados.carnaval) add(e - 47*day);
+  const mun = String(state.cfg.feriados.municipal||"").match(/^(\d{1,2})\/(\d{1,2})$/);
+  if(mun) set.add(`${pad(+mun[2])}-${pad(+mun[1])}`);
+  return holidayCache[y] = set;
+}
+
+/* ---------- rotação e dias ---------- */
+function rotPattern(){ return String(state.cfg.rotacao.padrao||"").toUpperCase().replace(/\s/g,"").split("").map(c => SHIFTS.includes(c) ? c : "-"); }
+function rotationShift(y,m,d){
+  const p = rotPattern(), ini = state.cfg.rotacao.inicio;
+  if(!p.length || !/^\d{4}-\d{2}-\d{2}$/.test(ini)) return "-";
+  const [iy,im,id] = ini.split("-").map(Number);
+  const diff = Math.round((Date.UTC(y,m,d) - Date.UTC(iy,im-1,id)) / 86400000);
+  return p[((diff % p.length) + p.length) % p.length];
+}
+function dayInfo(y,m,d){
+  const k = keyOf(y,m,d), st = state.dias[k] || {}, dow = dowOf(y,m,d);
+  const s = st.s !== undefined ? st.s : rotationShift(y,m,d);
+  const work = SHIFTS.includes(s);
+  const base = work ? state.cfg.turnos[s][dow] : {h:0,t:false};
+  const isHol = holidays(y).has(k.slice(5));
+  const fer = st.f !== undefined ? st.f : isHol;
+  return {
+    k, d, dow, s, work, ferias: s === "F",
+    // num feriado trabalhado as horas noturnas não contam (o feriado já é pago a dobrar)
+    h: work ? (st.h !== undefined ? st.h : (fer ? 0 : base.h)) : 0, hOv: work && st.h !== undefined,
+    t: work ? (st.t !== undefined ? st.t : base.t) : false, tOv: work && st.t !== undefined,
+    f: fer
+  };
+}
+function feriasAno(y){
+  let n = 0;
+  for(let m=0; m<12; m++) for(let d=1, t=daysIn(y,m); d<=t; d++) if(dayInfo(y,m,d).ferias) n++;
+  return n;
+}
+function monthData(y,m){
+  const n = daysIn(y,m), corte = state.cfg.diaCorte, corteF = state.cfg.diaCorteFeriados ?? corte, days = [];
+  const o = {days, horas:0, trab:0, trA:0, trB:0, ferA:0, ferB:0, ferias:0, last:n};
+  for(let d=1; d<=n; d++){
+    const i = dayInfo(y,m,d); days.push(i);
+    if(i.ferias) o.ferias++;
+    if(!i.work) continue;
+    o.trab++; o.horas += i.h;
+    if(i.t) d <= corte ? o.trA++ : o.trB++;
+    if(i.f) d <= corteF ? o.ferA++ : o.ferB++;
+  }
+  o.horas = r2(o.horas);
+  return o;
+}
+
+/* ---------- IRS ---------- */
+function irsTables(y){
+  const years = Object.keys(IRS_TABELAS).map(Number).sort((a,b)=>a-b);
+  let use = years[0]; for(const yy of years) if(yy <= y) use = yy;
+  if(y > years[years.length-1]) use = years[years.length-1];
+  return {year:use, t:IRS_TABELAS[use]};
+}
+function irsTabela(irs){
+  const deps = Math.max(0, Math.floor(irs.dependentes||0));
+  if(irs.deficiente){
+    if(irs.estado === "casado1") return "VII";
+    if(irs.estado === "casado2") return deps ? "VI" : "IV";
+    return deps ? "V" : "IV";
+  }
+  if(irs.estado === "casado1") return "III";
+  if(irs.estado === "nao_casado" && deps) return "II";
+  return "I";
+}
+function irsRetention(R, y){
+  const {year, t} = irsTables(y), irs = state.cfg.irs, nome = irsTabela(irs);
+  const tab = t[nome], deps = Math.max(0, Math.floor(irs.dependentes||0));
+  const row = tab.rows.find(r => R <= r[0]);
+  let taxa = row[1];
+  if(deps >= 3 && taxa > 0) taxa -= .01;                       // n.º 5 h)
+  if(irs.taxaOpcional && irs.taxaOpcional/100 > taxa) taxa = irs.taxaOpcional/100; // n.º 5 e)
+  let parcela = typeof row[2] === "function" ? row[2](R) : row[2];
+  const nDef = Math.min(deps, Math.max(0, Math.floor(irs.depDeficientes||0)));
+  const fator = Math.min(IRS_EXTRA.depDefMax[irs.estado]||3, Math.max(1, Math.floor(irs.fatorDepDef||1)));
+  parcela += nDef * (IRS_EXTRA.depDef[irs.estado]||84.82) * fator;     // n.º 5 a) e n.º 6
+  if(irs.estado === "casado1" && irs.conjugeDef) parcela += IRS_EXTRA.conjugeDef; // n.º 5 b)
+  const val = taxa === 0 ? 0 : Math.max(0, R*taxa - parcela - tab.dep*deps);
+  return {val:r2(val), year, tabela:nome, limite: tab.rows[tab.rows.length-2][0]};
+}
+function reducaoDoMes(y, m){ return IRS_REDUCOES[monthKey(y,m)] || null; }
+function fatorReducao(y, m, R, limite){ const r = reducaoDoMes(y,m); return r && R <= limite ? r.fator : 1; }
+
+/* ---------- valores calculados a partir do fixo ---------- */
+function fixoTotal(list){ return r2((list || state.cfg.fixos).reduce((a,b)=>a+(+b.valor||0),0)); }
+function fixoNoturno(list){ return r2((list || state.cfg.fixos).reduce((a,b)=>a+(b.hn === false ? 0 : (+b.valor||0)),0)); }
+function valorDia(fixo, f){ f = f || state.cfg.formulas; return f.diasSemana ? fixo*12/(52*f.diasSemana) : 0; }
+function valorHora(fixo, f){ f = f || state.cfg.formulas; return f.horasSemana ? fixo*12/(52*f.horasSemana) : 0; }
+function autoHoraNoturna(fixo, f){ f = f || state.cfg.formulas; return valorHora(fixo, f) * (f.pctNoturno||0) / 100; }
+function autoFeriado(fixo, f){ f = f || state.cfg.formulas; return r2(r2(valorDia(fixo, f)) * (f.multFeriado||0)); }
+function effHoraNoturna(){ return state.cfg.auto.horaNoturna ? autoHoraNoturna(fixoNoturno()) : state.cfg.horaNoturna; }
+function effFeriado(fixo){ return state.cfg.auto.feriado ? autoFeriado(fixo) : state.cfg.valorFeriado; }
+
+/* ---------- subsídios de férias e de Natal ----------
+   Retenção autónoma (art. 99.º-C do CIRS): o IRS do subsídio calcula-se pela tabela
+   sobre o valor do subsídio, sem o somar ao vencimento do mês. Em duodécimos,
+   retém-se em cada mês 1/12 do imposto calculado sobre o subsídio inteiro. */
+function subsidioValor(sub, fixo){ return (sub.valor === null || sub.valor === undefined || sub.valor === "") ? fixo : +sub.valor; }
+function subsidiosDoMes(y, m, fixo){
+  const S = state.cfg.subsidios, out = [];
+  [["ferias","Subsídio de férias"],["natal","Subsídio de Natal"]].forEach(([k,nome]) => {
+    const total = r2(subsidioValor(S[k], fixo));
+    if(!total) return;
+    const ret = irsRetention(total, y);
+    const irsTotal = irsRound(ret.val);
+    if(S.modo === "duodecimos"){
+      out.push({nome:nome+" (duodécimo)", valor:r2(total/12), irs:irsRound(irsTotal/12), pct: irsTotal/total*100});
+    } else if(+S[k].mes === m+1){
+      const f = fatorReducao(y, m, total, ret.limite);
+      const irs = f === 1 ? irsTotal : irsRound(ret.val * f);
+      out.push({nome, valor:total, irs, pct: irs/total*100, reduzido: f !== 1});
+    }
+  });
+  return out;
+}
+
+/* ---------- pagamento ---------- */
+function irsRound(v){ return state.cfg.irsMetodo.truncar ? Math.floor(v + 1e-9) : r2(v); }
+/* IRS de um mês: remuneração normal pela tabela + feriados/horas extra a 50 % da taxa efetiva (n.º 5 f) */
+function irsDoMes(R, he, y, pctManual, fator){
+  const auto = irsRetention(R, y), manual = pctManual !== undefined && pctManual !== null;
+  const regBruto = manual ? R*pctManual/100 : auto.val;
+  const eff = R ? regBruto / R : 0;
+  const f = manual ? 1 : (fator || 1);
+  const reg = irsRound(regBruto * f), heIrs = irsRound(he * eff * 0.5 * f);
+  return {reg, he:heIrs, total: reg + heIrs, eff: eff * f, autoPct: R ? auto.val/R*100 : 0, tabela:auto.tabela, year:auto.year, limite:auto.limite, reduzido: f !== 1};
+}
+function P_manualPct(mm, I){ return (mm.irsPct !== undefined && mm.irsPct !== null) ? mm.irsPct : I.autoPct; }
+function payment(y,m){
+  const c = state.cfg, M = c.irsMetodo, cur = monthData(y,m), p = prevMonth(y,m), prv = monthData(p.y,p.m);
+  const mm = state.meses[monthKey(y,m)] || {}, mp = state.meses[monthKey(p.y,p.m)] || {};
+  const fixo = fixoTotal();
+  const vFer = effFeriado(fixo), vHn = effHoraNoturna();
+  const ferA = r2(cur.ferA*vFer), ferB = r2(prv.ferB*vFer);
+  const extra = r2(mm.extra||0);
+  const trA = r2(cur.trA*c.transporte), trB = r2(prv.trB*c.transporte);
+  const hPagas = Math.max(0, r2(prv.horas - c.horasIsentas));
+  const not = r2(hPagas*vHn);
+  const outrosAb = r2(mm.outrosAbonos||0);   // ex.: observação dos OOV do mês anterior
+  const subs = subsidiosDoMes(y, m, fixo);
+  const tardio = r2(not + trB + outrosAb);   // rendimentos normais do mês anterior pagos agora
+  const bruto = r2(fixo+ferA+ferB+extra+trA+tardio + subs.reduce((a,b)=>a+b.valor,0));
+  // SS calculada em separado sobre o que é do mês e o que é do mês anterior (como no recibo)
+  const ss = r2(r2((bruto - tardio - ferB)*c.ss/100) + r2((tardio + ferB)*c.ss/100));
+
+  // remuneração própria do mês e o que conta como trabalho suplementar
+  // Feriados como trabalho suplementar: retêm no mês em que são pagos, mesmo os do mês anterior
+  // (recibo de maio: feriados de abril retidos com a taxa de maio; recibo de junho: incluídos no recálculo de maio)
+  const heFer = M.feriadoHE;
+  let base = r2(fixo + trA + (heFer ? 0 : ferA)), he = r2(extra + (heFer ? ferA + ferB : 0));
+  let acerto = null;
+  if(M.recalcular){
+    // rendimentos normais do mês anterior pagos agora: recalcula-se o IRS desse mês (como no recibo)
+    const pp = prevMonth(p.y, p.m), prv2 = monthData(pp.y, pp.m);
+    const prvTrA = r2(prv.trA*c.transporte), prvFerA = r2(prv.ferA*vFer), prvFerB = r2(prv2.ferB*vFer), prvExtra = r2(mp.extra||0);
+    const pBase = r2(fixo + prvTrA + (heFer ? 0 : prvFerA)), pHe = r2(prvExtra + (heFer ? prvFerA + prvFerB : 0));
+    const antes = irsDoMes(pBase, pHe, p.y, null);
+    const pBase2 = r2(pBase + tardio + (heFer ? 0 : ferB));
+    const depois = irsDoMes(pBase2, pHe, p.y, null);
+    const fA = fatorReducao(y, m, pBase2, depois.limite);
+    const dif = depois.total - antes.total;
+    acerto = {antes: antes.total, depois: depois.total, valor: fA === 1 ? dif : irsRound(dif * fA), pct: depois.eff*100, reduzido: fA !== 1};
+  } else {
+    base = r2(base + tardio + (heFer ? 0 : ferB));
+  }
+  const manual = false; // a taxa vem sempre das tabelas de retenção
+  const I0 = irsRetention(base, y);
+  const I = irsDoMes(base, he, y, manual ? mm.irsPct : null, fatorReducao(y, m, base, I0.limite));
+  const irsSubs = subs.reduce((a,b)=>a+b.irs,0);
+  const irsTotal = r2(I.total + (acerto ? acerto.valor : 0) + irsSubs);
+  const outros = r2(mm.outros||0);
+  const desc = r2(c.descontos.reduce((a,b)=>a+(+b.valor||0),0) + outros);
+  const liquido = r2(bruto - ss - irsTotal - desc);
+  const alim = r2(cur.trab*c.alimentacao);
+  return {cur,prv,p,fixo,ferA,ferB,extra,trA,trB,hPagas,not,outrosAb,subs,bruto,ss,base,he,I,acerto,irsTotal,outros,vFer,vHn,manual,
+          reducao: reducaoDoMes(y,m), irsYear:I.year, irsTab:I.tabela, irsPct: P_manualPct(mm, I), irsPctAuto:I.autoPct, desc, liquido, alim};
+}
+
+/* ---------- interface ---------- */
+function render(){
+  const {y,m} = view, P = payment(y,m), cur = P.cur, c = state.cfg;
+  document.getElementById("monthLabel").textContent = `${MESES[m]} ${y}`;
+  document.getElementById("hintIsentas").textContent = num(c.horasIsentas);
+  document.getElementById("netValue").textContent = eur(P.liquido);
+  document.getElementById("setupBanner").hidden = P.fixo > 0;
+
+  // grelha
+  const corte = c.diaCorte;
+  const cls = i => i.work ? (i.f ? "col-H" : "col-"+i.s) : (i.ferias ? "col-V" : "");
+  const cut = i => i.d === corte ? " cut" : "";
+  let acc = 0;
+  const unpaid = cur.days.map(i => { const before = acc; acc += i.work ? i.h : 0; return i.work && i.h ? Math.max(0, Math.min(i.h, c.horasIsentas - before)) : 0; });
+  const table = (ds, off) => {
+    let h = "<table class=\"grid\"><tr><th>Dia</th>" + ds.map(i=>`<td class="dnum ${cls(i)}${cut(i)}">${i.d}</td>`).join("") + "</tr>";
+    h += "<tr><td>Sem.</td>" + ds.map(i=>`<td class="wd ${cls(i)}${cut(i)}">${DOW[i.dow]}</td>`).join("") + "</tr>";
+    h += "<tr><td>Turno</td>" + ds.map(i=>`<td class="${cut(i)}"><button class="shift ${i.work?"s-"+(i.f?"H":i.s):(i.ferias?"s-V":"")}" data-shift="${i.k}" aria-label="Dia ${i.d}: ${SHIFT_NAMES[i.s]||"folga"}">${i.work||i.ferias?i.s:"—"}</button></td>`).join("") + "</tr>";
+    h += "<tr><td>Feriado</td>" + ds.map(i=>`<td class="${cut(i)}"><input type="checkbox" data-hol="${i.k}" ${i.f?"checked":""} aria-label="Feriado no dia ${i.d}"></td>`).join("") + "</tr>";
+    h += "<tr><td>H. noturnas</td>" + ds.map((i,ix)=>{
+      const u = unpaid[ix+off], full = u && u >= i.h;
+      const tip = u ? ` title="${full ? "Não paga (dentro das primeiras " + num(c.horasIsentas) + " h do mês)" : num(u) + " h não pagas, " + num(i.h-u) + " h pagas"}"` : "";
+      return `<td class="${i.work?"val "+cls(i):""}${i.hOv?" ov":""}${full?" unpaid":(u?" partial":"")}${cut(i)}" ${i.work?`data-hours="${i.k}"`:""}${tip}>${i.work && i.h ? num(i.h) : ""}</td>`;
+    }).join("") + "</tr>";
+    h += "<tr><td>Transp. €</td>" + ds.map(i=>`<td class="${i.work?"val "+cls(i):""}${i.tOv?" ov":""}${cut(i)}" ${i.work?`data-transp="${i.k}"`:""}>${i.t ? num(c.transporte) : ""}</td>`).join("") + "</tr>";
+    h += "<tr><td>Alim. €</td>" + ds.map(i=>`<td class="${i.work?"val "+cls(i):""}${cut(i)}" style="cursor:default">${i.work ? num(c.alimentacao) : ""}</td>`).join("") + "</tr>";
+    return h + "</table>";
+  };
+  // no computador o mês fica numa só tabela; em ecrãs estreitos divide-se em duas metades, sem barra de deslizar
+  const mq = q => window.matchMedia && window.matchMedia(q).matches;
+  const partes = mq("(max-width: 520px)") ? 4 : mq("(max-width: 820px)") ? 2 : 1;
+  const tam = Math.ceil(cur.days.length / partes);
+  let html = "";
+  for(let o = 0; o < cur.days.length; o += tam) html += table(cur.days.slice(o, o + tam), o);
+  document.getElementById("grid").innerHTML = html;
+
+  const corteF = c.diaCorteFeriados ?? corte;
+  const last = cur.last, after = `${corte+1} a ${last}`, afterF = `${corteF+1} a ${last}`;
+  document.getElementById("splitTable").innerHTML = [
+    [`Transporte dias 1 a ${corte}: ${cur.trA} dias (pago este mês)`, cur.trA*c.transporte],
+    [`Transporte dias ${after}: ${cur.trB} dias (pago no mês seguinte)`, cur.trB*c.transporte],
+    [`Feriados dias 1 a ${corteF}: ${cur.ferA} (pago este mês)`, cur.ferA*P.vFer],
+    [`Feriados dias ${afterF}: ${cur.ferB} (pago no mês seguinte)`, cur.ferB*P.vFer],
+    [`Horas noturnas do mês: ${num(cur.horas)} h − ${num(c.horasIsentas)} h não pagas = ${num(Math.max(0,cur.horas-c.horasIsentas))} h (pagas no mês seguinte)`, Math.max(0,cur.horas-c.horasIsentas)*P.vHn]
+  ].map(([a,b])=>`<tr class="sum"><td>${a}</td><td>${eur(b)}</td></tr>`).join("")
+  + `<tr class="sum"><td>Dias de férias: ${cur.ferias} em ${MESES[m]}, ${feriasAno(y)} em ${y}</td><td>${cur.ferias} ${cur.ferias===1?"dia":"dias"}</td></tr>`;
+
+  // pagamento
+  const pm = MESES[P.p.m], cm = MESES[m], pl = P.prv.last;
+  document.getElementById("payTitle").textContent = `Pagamento de ${cm} ${y}`;
+  const mm = state.meses[monthKey(y,m)] || {};
+  const fixRows = c.fixos.map(f=>`<tr><td>${esc(f.nome||"Fixo")}</td><td>${eur(+f.valor||0)}</td></tr>`).join("");
+  const descRows = c.descontos.filter(d=>+d.valor).map(d=>`<tr class="minus"><td>${esc(d.nome||"Desconto")}</td><td>−${eur(+d.valor)}</td></tr>`).join("");
+  document.getElementById("payTable").innerHTML = fixRows + `
+    <tr><td>Feriados de ${cm}, dias 1 a ${corteF} (${cur.ferA})</td><td>${eur(P.ferA)}</td></tr>
+    <tr><td>Feriados de ${pm}, dias ${corteF+1} a ${pl} (${P.prv.ferB})</td><td>${eur(P.ferB)}</td></tr>
+    <tr><td>Horas extra</td><td><input class="inline-in" id="extraIn" inputmode="decimal" value="${mm.extra?num(mm.extra):""}" placeholder="0,00" aria-label="Horas extra em euros"> €</td></tr>
+    <tr><td>Transporte de ${cm}, dias 1 a ${corte} (${cur.trA} dias)</td><td>${eur(P.trA)}</td></tr>
+    <tr><td>Transporte de ${pm}, dias ${corte+1} a ${pl} (${P.prv.trB} dias)</td><td>${eur(P.trB)}</td></tr>
+    <tr><td>Outros abonos de ${pm} (por exemplo, observação dos OOV)</td><td><input class="inline-in" id="outrosAbIn" inputmode="decimal" value="${mm.outrosAbonos?num(mm.outrosAbonos):""}" placeholder="0,00" aria-label="Outros abonos em euros"> €</td></tr>
+    <tr><td>Horas noturnas de ${pm}: total ${num(P.prv.horas)} h − primeiras ${num(c.horasIsentas)} h = ${num(P.hPagas)} h × ${P.vHn.toLocaleString("pt-PT",{maximumFractionDigits:4})} €</td><td>${eur(P.not)}</td></tr>
+    ${P.subs.map(sb=>`<tr><td>${sb.nome}</td><td>${eur(sb.valor)}</td></tr>`).join("")}
+    <tr class="sum"><td>Bruto</td><td>${eur(P.bruto)}</td></tr>
+    <tr class="minus"><td>Segurança Social (${num(c.ss)} %)</td><td>−${eur(P.ss)}</td></tr>
+    <tr class="minus"><td><span class="irsbox">IRS de ${cm} pela tabela ${P.irsTab} sobre ${eur(P.base)} (${num(P.irsPctAuto)} %${P.I.reduzido ? ", retenção a 50 %" : ""})</span></td><td>−${eur(P.I.reg)}</td></tr>
+    ${P.he ? `<tr class="minus"><td>IRS de ${c.irsMetodo.feriadoHE ? "feriados e horas extra" : "horas extra"} sobre ${eur(P.he)} (50 % da taxa, ${num(P.I.eff*50)} %)</td><td>−${eur(P.I.he)}</td></tr>` : ""}
+    ${P.acerto && P.acerto.valor ? `<tr class="minus"><td>Acerto do IRS de ${pm} (horas noturnas, transporte e outros abonos de ${pm} pagos agora): ${eur(P.acerto.depois)} − ${eur(P.acerto.antes)}${P.acerto.reduzido ? ", retido a 50 %" : ""}</td><td>${P.acerto.valor < 0 ? "+" : "−"}${eur(Math.abs(P.acerto.valor))}</td></tr>` : ""}
+    ${P.subs.map(sb=>`<tr class="minus"><td>IRS do ${sb.nome.charAt(0).toLowerCase()+sb.nome.slice(1)} (retenção autónoma${sb.reduzido ? " a 50 %" : ""}, ${num(sb.pct)} %)</td><td>−${eur(sb.irs)}</td></tr>`).join("")}
+    ${descRows}
+    <tr class="minus"><td>Outros descontos de ${cm} (por exemplo, compensação de refeições)</td><td><input class="inline-in" id="outrosIn" inputmode="decimal" value="${mm.outros?num(mm.outros):""}" placeholder="0,00" aria-label="Outros descontos em euros"> €</td></tr>
+    <tr class="sum"><td>Líquido</td><td>${eur(P.liquido)}</td></tr>
+    <tr class="sub"><td>Subsídio de alimentação de ${cm} (${cur.trab} dias, à parte, não conta para o líquido)</td><td>${eur(P.alim)}</td></tr>`;
+  const tabYear = P.irsYear !== y ? ` As tabelas de ${y} ainda não estão na aplicação; está a usar as de ${P.irsYear}.` : "";
+  const red = P.reducao ? ` Em ${cm} de ${y} a retenção é reduzida para ${num(P.reducao.fator*100)} % (${P.reducao.nome}), exceto em remunerações acima do penúltimo escalão da tabela.` : "";
+  document.getElementById("irsNote").textContent = `IRS calculado com as tabelas de retenção na fonte de ${P.irsYear} para o Continente.${tabYear}${red}`;
+  renderYear();
+}
+
+let yearView = null;
+const pct1 = v => v.toLocaleString("pt-PT",{minimumFractionDigits:1,maximumFractionDigits:1}) + " %";
+function renderYear(){
+  const y = yearView ?? view.y, sel = document.getElementById("yearSel");
+  const anos = []; for(let a = view.y - 2; a <= view.y + 2; a++) anos.push(a);
+  if(!anos.includes(y)) anos.push(y);
+  sel.innerHTML = anos.sort((a,b)=>a-b).map(a => `<option value="${a}" ${a===y?"selected":""}>${a}</option>`).join("");
+  const MES3 = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+  const cols = ["fixo","fer","subs","tr","not","bruto","desc","liq","alim"];
+  const tot = Object.fromEntries(cols.map(k=>[k,0])); tot.irs = 0;
+  let rows = "";
+  for(let m = 0; m < 12; m++){
+    const P = payment(y, m);
+    const r = {
+      fixo: P.fixo, fer: r2(P.ferA + P.ferB + P.extra + P.outrosAb), subs: r2(P.subs.reduce((a,b)=>a+b.valor,0)),
+      tr: r2(P.trA + P.trB), not: P.not, bruto: P.bruto,
+      desc: r2(P.ss + P.irsTotal + P.desc), liq: P.liquido, alim: P.alim
+    };
+    cols.forEach(k => tot[k] += r[k]); tot.irs += P.irsTotal;
+    const pct = P.bruto ? P.irsTotal / P.bruto * 100 : 0;
+    rows += `<tr data-ym="${y}-${m}" class="${y===view.y && m===view.m ? "cur" : ""}"><td><b>${MES3[m]}</b></td>
+      <td>${eur(r.fixo)}</td><td>${eur(r.fer)}</td><td>${eur(r.subs)}</td><td>${eur(r.tr)}</td><td>${eur(r.not)}</td>
+      <td>${eur(r.bruto)}</td><td>${pct1(pct)}</td><td>${eur(r.desc)}</td><td class="liq">${eur(r.liq)}</td><td>${eur(r.alim)}</td></tr>`;
+  }
+  const pctAno = tot.bruto ? tot.irs / tot.bruto * 100 : 0;
+  document.getElementById("yearTable").innerHTML = `<thead><tr><th></th><th>Fixo</th><th>Feriados e extra</th><th>Subsídios</th><th>Transporte</th><th>Noturnas</th><th>Bruto</th><th>IRS %</th><th>Descontos</th><th>Líquido</th><th>Alimentação</th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr><td>Ano</td><td>${eur(tot.fixo)}</td><td>${eur(tot.fer)}</td><td>${eur(tot.subs)}</td><td>${eur(tot.tr)}</td><td>${eur(tot.not)}</td>
+      <td>${eur(tot.bruto)}</td><td>${pct1(pctAno)}</td><td>${eur(tot.desc)}</td><td class="liq">${eur(tot.liq)}</td><td>${eur(tot.alim)}</td></tr></tfoot>`;
+}
+document.getElementById("yearSel").addEventListener("change", e => { yearView = +e.target.value; renderYear(); });
+document.getElementById("yearTable").addEventListener("click", e => {
+  const tr = e.target.closest("tr[data-ym]"); if(!tr) return;
+  const [y, m] = tr.dataset.ym.split("-").map(Number);
+  view = {y, m}; yearView = y; render();
+  window.scrollTo({top: 0, behavior: "smooth"});
+});
+
+/* ---------- eventos da grelha ---------- */
+function setDay(k, patch){
+  const st = Object.assign({}, state.dias[k] || {}, patch);
+  Object.keys(st).forEach(x => st[x] === undefined && delete st[x]);
+  if(Object.keys(st).length) state.dias[k] = st; else delete state.dias[k];
+  save(); render();
+}
+document.getElementById("grid").addEventListener("click", e => {
+  const sb = e.target.closest("[data-shift]");
+  if(sb){
+    const k = sb.dataset.shift, [y,m,d] = k.split("-").map(Number);
+    const i = dayInfo(y,m-1,d), order = ["-","M","T","N","F"];
+    const next = order[(order.indexOf(i.s)+1) % order.length];
+    // ao mudar o turno, as alterações de horas/transporte desse dia deixam de fazer sentido
+    setDay(k, {s: next, h: undefined, t: undefined});
+    requestAnimationFrame(() => document.querySelector(`[data-shift="${k}"]`)?.focus());
+    return;
+  }
+  const hc = e.target.closest("[data-hours]");
+  if(hc){
+    const k = hc.dataset.hours, [y,m,d] = k.split("-").map(Number), i = dayInfo(y,m-1,d);
+    ask(`Horas noturnas em ${pad(d)}/${pad(m)}.`, {ok:"Guardar", alt: i.hOv ? "Usar o valor do turno" : null, field:{label:"Horas", value:num(i.h)}},
+      (r, v) => setDay(k, {h: r === "alt" || v.trim() === "" ? undefined : parseNum(v)}));
+    return;
+  }
+  const tc = e.target.closest("[data-transp]");
+  if(tc){
+    const k = tc.dataset.transp, [y,m,d] = k.split("-").map(Number), i = dayInfo(y,m-1,d);
+    const base = state.cfg.turnos[i.s][i.dow].t;
+    const nv = !i.t;
+    setDay(k, {t: nv === base ? undefined : nv});
+  }
+});
+document.getElementById("grid").addEventListener("keydown", e => {
+  const sb = e.target.closest("[data-shift]"); if(!sb) return;
+  const map = {m:"M",t:"T",n:"N",f:"F",Delete:"-",Backspace:"-","-":"-"}, v = map[e.key] || map[e.key.toLowerCase?.()];
+  if(!v) return; e.preventDefault();
+  const k = sb.dataset.shift; setDay(k, {s:v, h:undefined, t:undefined});
+  requestAnimationFrame(() => document.querySelector(`[data-shift="${k}"]`)?.focus());
+});
+document.getElementById("grid").addEventListener("change", e => {
+  const cb = e.target.closest("[data-hol]"); if(!cb) return;
+  const k = cb.dataset.hol, auto = holidays(+k.slice(0,4)).has(k.slice(5));
+  setDay(k, {f: cb.checked === auto ? undefined : cb.checked});
+});
+document.getElementById("payTable").addEventListener("change", e => {
+  const mk = monthKey(view.y, view.m), mm = state.meses[mk] = state.meses[mk] || {};
+  if(e.target.id === "extraIn"){ mm.extra = parseNum(e.target.value); }
+  if(e.target.id === "outrosIn"){ mm.outros = parseNum(e.target.value); }
+  if(e.target.id === "outrosAbIn"){ mm.outrosAbonos = parseNum(e.target.value); }
+  if(e.target.id === "irsIn"){
+    const v = e.target.value.trim();
+    if(v === "") delete mm.irsPct;
+    else { const auto = payment(view.y, view.m); const val = parseNum(v);
+           if(Math.abs(val - auto.irsPctAuto) < 0.005) delete mm.irsPct; else mm.irsPct = val; }
+  }
+  save(); render();
+});
+document.getElementById("payTable").addEventListener("click", e => {
+  if(e.target.id !== "irsAuto") return;
+  const mm = state.meses[monthKey(view.y, view.m)]; if(mm) delete mm.irsPct;
+  save(); render();
+});
+document.getElementById("prev").onclick = () => { view = prevMonth(view.y, view.m); yearView = null; render(); };
+document.getElementById("next").onclick = () => { view = view.m === 11 ? {y:view.y+1,m:0} : {y:view.y,m:view.m+1}; yearView = null; render(); };
+document.getElementById("resetMonth").onclick = () => {
+  ask(`Apagar as alterações feitas à mão em ${MESES[view.m]} e voltar aos turnos da rotação?`, {ok:"Repor rotação", danger:true}, () => {
+    const pre = monthKey(view.y, view.m) + "-";
+    Object.keys(state.dias).forEach(k => k.startsWith(pre) && delete state.dias[k]);
+    save(); render(); toast(`${MESES[view.m]} voltou à rotação.`);
+  });
+};
+
+/* ---------- definições ---------- */
+const dlg = document.getElementById("cfg");
+function rowHtml(r, withHn){
+  return `<div class="row${withHn?" hnrow":""}"><input value="${esc(r.nome||"")}" placeholder="Descrição" aria-label="Descrição"><input value="${r.valor?num(r.valor):""}" inputmode="decimal" placeholder="0,00 €" aria-label="Valor em euros">${withHn?`<label class="chk hn" title="Entra no cálculo da hora noturna"><input type="checkbox" class="recalc" ${r.hn===false?"":"checked"}> hora noturna</label>`:""}<button class="x" type="button" data-del title="Remover">✕</button></div>`;
+}
+function rowsHtml(list, id){
+  const withHn = id === "fixRows";
+  return `<div class="rows" id="${id}">` + list.map(r => rowHtml(r, withHn)).join("") + `</div><button class="btn" type="button" data-add="${id}">Adicionar linha</button>`;
+}
+function openCfg(){
+  const c = state.cfg;
+  const shiftRows = SHIFTS.map(s => `<tr><th>${SHIFT_NAMES[s]} (${s})</th>` + DOW_ORDER.map(dw => {
+    const v = c.turnos[s][dw];
+    return `<td><input type="text" inputmode="decimal" data-sh="${s}" data-dw="${dw}" value="${num(v.h)}" aria-label="Horas noturnas ${SHIFT_NAMES[s]} ${DOW[dw]}"><label><input type="checkbox" data-st="${s}" data-dw="${dw}" ${v.t?"checked":""}>transp.</label></td>`;
+  }).join("") + "</tr>").join("");
+  document.getElementById("cfgBody").innerHTML = `
+  <fieldset><legend>Vencimento fixo mensal</legend>
+    ${rowsHtml(c.fixos, "fixRows")}
+    <p class="note">Escreva cada componente do recibo. Desmarque “hora noturna” nas que não entram no valor da hora noturna (na TAP, o subsídio de turno).</p>
+  </fieldset>
+  <fieldset><legend>Cálculo a partir do fixo</legend><div class="fields">
+    <label class="f">Horas de trabalho por semana<input id="c_hs" class="recalc" inputmode="decimal" value="${num(c.formulas.horasSemana)}"></label>
+    <label class="f">Dias de trabalho por semana<input id="c_ds" class="recalc" inputmode="decimal" value="${num(c.formulas.diasSemana)}"></label>
+    <label class="f">Hora noturna (% do valor hora)<input id="c_pn" class="recalc" inputmode="decimal" value="${num(c.formulas.pctNoturno)}"></label>
+    <label class="f">Feriado (vezes o valor dia)<input id="c_mf" class="recalc" inputmode="decimal" value="${num(c.formulas.multFeriado)}"></label>
+  </div><p class="note" id="autoInfo"></p></fieldset>
+  <fieldset><legend>Valores</legend><div class="fields">
+    <div><label class="f">Valor da hora noturna (€/h)<input id="c_hn" inputmode="decimal" value="${c.horaNoturna.toLocaleString('pt-PT',{maximumFractionDigits:4})}"></label>
+      <label class="chk"><input type="checkbox" id="c_hn_a" class="recalc" ${c.auto.horaNoturna?"checked":""}> Calcular a partir do fixo</label></div>
+    <div><label class="f">Valor por feriado trabalhado (€)<input id="c_fer" inputmode="decimal" value="${num(c.valorFeriado)}"></label>
+      <label class="chk"><input type="checkbox" id="c_fer_a" class="recalc" ${c.auto.feriado?"checked":""}> Calcular a partir do fixo</label></div>
+    <label class="f">Horas noturnas não pagas por mês<input id="c_hi" inputmode="decimal" value="${num(c.horasIsentas)}"></label>
+    <label class="f">Subsídio de transporte por dia (€)<input id="c_tr" inputmode="decimal" value="${num(c.transporte)}"></label>
+    <label class="f">Subsídio de alimentação por dia (€)<input id="c_al" inputmode="decimal" value="${num(c.alimentacao)}"></label>
+    <label class="f">Pagamento do subsídio de transporte: no próprio mês até ao dia<input id="c_ct" inputmode="numeric" value="${c.diaCorte}"></label>
+    <label class="f">Pagamento dos feriados: no próprio mês até ao dia<input id="c_ctf" inputmode="numeric" value="${c.diaCorteFeriados ?? c.diaCorte}"></label>
+    <label class="f">Segurança Social (%)<input id="c_ss" inputmode="decimal" value="${num(c.ss)}"></label>
+  </div></fieldset>
+  <fieldset><legend>Subsídios de férias e de Natal</legend><div class="fields">
+    <label class="f">Forma de pagamento
+      <select id="c_sm">
+        <option value="inteiro" ${c.subsidios.modo!=="duodecimos"?"selected":""}>Por inteiro, no mês indicado</option>
+        <option value="duodecimos" ${c.subsidios.modo==="duodecimos"?"selected":""}>Em duodécimos (1/12 todos os meses)</option>
+      </select></label>
+    <div><label class="f">Valor do subsídio de férias (€)<input id="c_sfv" inputmode="decimal" value="${c.subsidios.ferias.valor===null?"":num(c.subsidios.ferias.valor)}"></label>
+      <label class="chk"><input type="checkbox" id="c_sfv_a" class="recalc" ${c.subsidios.ferias.valor===null?"checked":""}> Igual ao fixo</label></div>
+    <label class="f">Mês do subsídio de férias<select id="c_sfm">${MESES.map((n,i)=>`<option value="${i+1}" ${+c.subsidios.ferias.mes===i+1?"selected":""}>${n}</option>`).join("")}</select></label>
+    <div><label class="f">Valor do subsídio de Natal (€)<input id="c_snv" inputmode="decimal" value="${c.subsidios.natal.valor===null?"":num(c.subsidios.natal.valor)}"></label>
+      <label class="chk"><input type="checkbox" id="c_snv_a" class="recalc" ${c.subsidios.natal.valor===null?"checked":""}> Igual ao fixo</label></div>
+    <label class="f">Mês do subsídio de Natal<select id="c_snm">${MESES.map((n,i)=>`<option value="${i+1}" ${+c.subsidios.natal.mes===i+1?"selected":""}>${n}</option>`).join("")}</select></label>
+  </div><p class="note">O IRS dos subsídios é retido à parte (retenção autónoma) e a Segurança Social aplica-se normalmente.</p></fieldset>
+  <fieldset><legend>Descontos fixos mensais</legend>${rowsHtml(c.descontos, "descRows")}</fieldset>
+  <fieldset><legend>IRS</legend><div class="fields">
+    <label class="f">Estado civil
+      <select id="c_est" class="irsr">
+        <option value="nao_casado" ${c.irs.estado==="nao_casado"?"selected":""}>Não casado</option>
+        <option value="casado2" ${c.irs.estado==="casado2"?"selected":""}>Casado ou unido de facto, dois titulares</option>
+        <option value="casado1" ${c.irs.estado==="casado1"?"selected":""}>Casado ou unido de facto, único titular</option>
+      </select></label>
+    <label class="f">Número de dependentes<input id="c_dep" class="irsr" inputmode="numeric" value="${c.irs.dependentes||0}"></label>
+    <label class="chk" style="margin-top:22px"><input type="checkbox" id="c_def" class="irsr" ${c.irs.deficiente?"checked":""}> Titular com deficiência (incapacidade ≥ 60 %)</label>
+    <label class="f">Dependentes com deficiência (≥ 60 %)<input id="c_ddef" class="irsr" inputmode="numeric" value="${c.irs.depDeficientes||0}"></label>
+    <label class="f">Fator para dependentes com deficiência
+      <select id="c_fdd" class="irsr">${[1,2,3,4,5,6].map(n=>`<option value="${n}" ${+c.irs.fatorDepDef===n?"selected":""}>${n}×</option>`).join("")}</select></label>
+    <label class="chk" style="margin-top:22px" id="c_cdef_w"><input type="checkbox" id="c_cdef" class="irsr" ${c.irs.conjugeDef?"checked":""}> Cônjuge com deficiência (≥ 60 %) e sem rendimentos de trabalho ou pensões</label>
+    <label class="f">Taxa marginal superior pedida à entidade (%, opcional)<input id="c_tx" class="irsr" inputmode="decimal" value="${c.irs.taxaOpcional?num(c.irs.taxaOpcional):""}" placeholder="vazio = taxa da tabela"></label>
+    <label class="chk"><input type="checkbox" id="c_mt" ${c.irsMetodo.truncar?"checked":""}> Arredondar cada retenção ao euro, para baixo</label>
+    <label class="chk"><input type="checkbox" id="c_mf2" ${c.irsMetodo.feriadoHE?"checked":""}> Feriados retêm como trabalho suplementar (50 % da taxa)</label>
+    <label class="chk"><input type="checkbox" id="c_mr" ${c.irsMetodo.recalcular?"checked":""}> Horas noturnas, transporte e feriados do mês anterior: recalcular o IRS desse mês</label>
+  </div><p class="note" id="irsInfo"></p>
+  <p class="note">Tabelas de retenção na fonte do Continente para trabalho dependente (I a VII). Incluídas: parcela por dependente, acréscimo por dependente com deficiência (até 3× se não casado ou casado único titular, até 6× se casado dois titulares), acréscimo por cônjuge com deficiência no caso de casado único titular, redução de 1 ponto percentual com 3 ou mais dependentes, taxa superior por opção, retenção autónoma dos subsídios e retenção das horas extra a 50 % da taxa efetiva. A tabela “casado, único titular” só se aplica se o cônjuge não tiver rendimentos ou se um dos dois ganhar 95 % ou mais do total.</p></fieldset>
+  <fieldset><legend>Turnos: horas noturnas e transporte por dia da semana</legend>
+    <div class="scroll"><table class="shiftcfg"><tr><th></th>${DOW_ORDER.map(d=>`<th>${DOW[d]}</th>`).join("")}</tr>${shiftRows}</table></div>
+    <p class="note">Horas entre as 20h e as 07h de cada turno. “transp.” marca os turnos que dão direito a subsídio de transporte.</p>
+  </fieldset>
+  <fieldset><legend>Rotação</legend><div class="fields">
+    <label class="f">Padrão (M, T, N e - para folga)<input id="c_rp" value="${esc(c.rotacao.padrao)}" placeholder="ex.: NNNN---TTTT--MMMM-"></label>
+    <label class="f">Data em que o padrão começa<input id="c_ri" type="date" value="${esc(c.rotacao.inicio)}"></label>
+  </div>
+  <div class="preview" id="rotPrev"></div>
+  <p class="note">A rotação preenche a escala de todos os meses. O que mudar à mão num dia fica por cima da rotação.</p></fieldset>
+  <fieldset><legend>Feriados</legend><div class="fields">
+    <label class="f">Feriado municipal (dd/mm)<input id="c_mun" value="${esc(c.feriados.municipal)}" placeholder="13/06"></label>
+    <label class="f" style="flex-direction:row;align-items:center;gap:8px;margin-top:22px"><input type="checkbox" id="c_car" ${c.feriados.carnaval?"checked":""}> Contar a terça de Carnaval</label>
+  </div><p class="note">Os feriados nacionais são marcados automaticamente. Pode desmarcar ou marcar qualquer dia na escala.</p></fieldset>
+  <fieldset><legend>Cópia de segurança</legend>
+    <p class="note" style="margin-top:0">Os seus dados ficam guardados só neste navegador. Para os passar para outro dispositivo, copie a cópia de segurança, envie-a para si (por exemplo, por e-mail) e cole-a no outro dispositivo.</p>
+    <div class="toolbar"><button class="btn" type="button" id="exp">Copiar cópia de segurança</button>
+    <label class="btn">Importar ficheiro .json<input type="file" id="imp" accept=".json,application/json,text/plain" hidden></label>
+    <button class="btn danger" type="button" id="wipe">Apagar todos os dados</button></div>
+    <label class="f" style="margin-top:10px">Cópia de segurança (texto)
+      <textarea class="backup" id="bkText" spellcheck="false" placeholder="Cole aqui uma cópia de segurança e carregue em Importar texto"></textarea></label>
+    <div class="toolbar"><button class="btn" type="button" id="bkImport">Importar texto</button></div>
+  </fieldset>`;
+  updatePreview(); refreshAuto(); refreshIrsInfo();
+  dlg.showModal();
+}
+function updatePreview(){
+  const p = document.getElementById("c_rp")?.value.toUpperCase().replace(/\s/g,"").split("").map(ch => SHIFTS.includes(ch)?ch:"-") || [];
+  document.getElementById("rotPrev").innerHTML = p.map(s=>`<span class="p-${s}">${s==="-"?"—":s}</span>`).join("") + (p.length?`<span style="width:auto;padding:0 6px;border:0;background:none;font-weight:400;color:var(--muted)">ciclo de ${p.length} dias</span>`:"");
+}
+function formFormulas(){
+  const g = id => parseNum(document.getElementById(id).value);
+  return {horasSemana:g("c_hs"), diasSemana:g("c_ds"), pctNoturno:g("c_pn"), multFeriado:g("c_mf")};
+}
+function refreshAuto(){
+  const fixo = fixoTotal(readRows("fixRows")), f = formFormulas();
+  const set = (inpId, chkId, val, dec) => {
+    const inp = document.getElementById(inpId), on = document.getElementById(chkId).checked;
+    inp.disabled = on;
+    if(on) inp.value = val.toLocaleString("pt-PT",{minimumFractionDigits:2, maximumFractionDigits:dec});
+  };
+  const fixoN = fixoNoturno(readRows("fixRows"));
+  set("c_hn","c_hn_a", autoHoraNoturna(fixoN,f), 4);
+  set("c_fer","c_fer_a", autoFeriado(fixo,f), 2);
+  set("c_sfv","c_sfv_a", fixo, 2);
+  set("c_snv","c_snv_a", fixo, 2);
+  document.getElementById("autoInfo").textContent =
+    `Com o fixo de ${eur(fixo)}: valor dia ${eur(valorDia(fixo,f))} (fixo × 12 ÷ (52 × ${num(f.diasSemana)})), valor hora ${eur(valorHora(fixo,f))} (fixo × 12 ÷ (52 × ${num(f.horasSemana)})). Hora noturna calculada sobre ${eur(fixoN)}, só com as componentes marcadas “hora noturna”.`;
+}
+function formIrs(){
+  const g = id => document.getElementById(id);
+  const tx = g("c_tx").value.trim();
+  return {estado:g("c_est").value, dependentes:Math.max(0, Math.round(parseNum(g("c_dep").value))), deficiente:g("c_def").checked,
+          depDeficientes:Math.max(0, Math.round(parseNum(g("c_ddef").value))), fatorDepDef:+g("c_fdd").value,
+          conjugeDef:g("c_est").value === "casado1" && g("c_cdef").checked, taxaOpcional: tx === "" ? null : parseNum(tx)};
+}
+function refreshIrsInfo(){
+  const irs = formIrs(), max = IRS_EXTRA.depDefMax[irs.estado];
+  document.getElementById("c_cdef_w").style.display = irs.estado === "casado1" ? "" : "none";
+  [...document.getElementById("c_fdd").options].forEach(o => o.disabled = +o.value > max);
+  if(+document.getElementById("c_fdd").value > max) document.getElementById("c_fdd").value = String(max);
+  let txt = "Tabela aplicada: " + TABELA_NOMES[irsTabela(irs)] + ".";
+  if(irs.depDeficientes > irs.dependentes) txt += " O número de dependentes com deficiência não pode ser maior que o total de dependentes.";
+  document.getElementById("irsInfo").textContent = txt;
+}
+function readRows(id){
+  return [...document.querySelectorAll(`#${id} .row`)].map(r => {
+    const [a,b] = r.querySelectorAll("input"), hn = r.querySelector(".hn input");
+    const o = {nome:a.value.trim(), valor:parseNum(b.value)}; if(hn && !hn.checked) o.hn = false; return o;
+  }).filter(r => r.nome || r.valor);
+}
+document.getElementById("cfgBody").addEventListener("click", e => {
+  if(e.target.matches("[data-del]")){ const inFix = e.target.closest("#fixRows"); e.target.closest(".row").remove(); if(inFix) refreshAuto(); }
+  const add = e.target.dataset?.add;
+  if(add){ const box = document.getElementById(add); box.insertAdjacentHTML("beforeend", rowHtml({}, add === "fixRows")); box.lastElementChild.querySelector("input").focus(); }
+  if(e.target.id === "exp"){
+    const ta = document.getElementById("bkText"), txt = JSON.stringify(state);
+    ta.value = txt;
+    const fallback = () => { ta.focus(); ta.select(); toast("Cópia selecionada. Copie-a com Ctrl+C (ou Copiar no telemóvel)."); };
+    try{ navigator.clipboard.writeText(txt).then(() => toast("Cópia de segurança copiada."), fallback); }catch(err){ fallback(); }
+  }
+  if(e.target.id === "bkImport") importBackup(document.getElementById("bkText").value);
+  if(e.target.id === "wipe") ask("Apagar todas as definições e escalas guardadas neste navegador?", {ok:"Apagar tudo", danger:true}, () => {
+    state = defaultState(); for(const k in holidayCache) delete holidayCache[k]; save(); dlg.close(); render(); toast("Dados apagados.");
+  });
+});
+document.getElementById("cfgBody").addEventListener("input", e => {
+  if(e.target.id === "c_rp") updatePreview();
+  if(e.target.closest("#fixRows") || e.target.classList.contains("recalc")) refreshAuto();
+  if(e.target.classList.contains("irsr")) refreshIrsInfo();
+});
+document.getElementById("cfgBody").addEventListener("change", e => {
+  if(e.target.classList.contains("recalc")) refreshAuto();
+  if(e.target.classList.contains("irsr")) refreshIrsInfo();
+});
+document.getElementById("cfgBody").addEventListener("change", e => {
+  if(e.target.id !== "imp" || !e.target.files[0]) return;
+  const r = new FileReader();
+  r.onload = () => importBackup(r.result);
+  r.readAsText(e.target.files[0]);
+  e.target.value = "";
+});
+function importBackup(txt){
+  try{
+    const s = JSON.parse(String(txt).trim());
+    if(!s || !s.cfg || !s.dias) throw new Error();
+    try{ localStorage.setItem(STORE_KEY, JSON.stringify(s)); state = load(); }catch(err){ state = s; }
+    for(const k in holidayCache) delete holidayCache[k];
+    save(); dlg.close(); render(); toast("Cópia importada.");
+  }catch(err){ toast("Este texto não é uma cópia de segurança válida da aplicação."); }
+}
+document.getElementById("saveCfg").onclick = () => {
+  const c = state.cfg, g = id => document.getElementById(id).value;
+  c.fixos = readRows("fixRows"); if(!c.fixos.length) c.fixos = [{nome:"Fixo", valor:0}];
+  c.descontos = readRows("descRows");
+  c.formulas = formFormulas();
+  c.auto = {horaNoturna: document.getElementById("c_hn_a").checked, feriado: document.getElementById("c_fer_a").checked};
+  c.horaNoturna = parseNum(g("c_hn")); c.horasIsentas = parseNum(g("c_hi")); c.valorFeriado = parseNum(g("c_fer"));
+  c.transporte = parseNum(g("c_tr")); c.alimentacao = parseNum(g("c_al"));
+  c.diaCorte = Math.min(30, Math.max(1, Math.round(parseNum(g("c_ct"))) || 20));
+  c.diaCorteFeriados = Math.min(30, Math.max(1, Math.round(parseNum(g("c_ctf"))) || 20)); c.ss = parseNum(g("c_ss"));
+  c.irsMetodo = {truncar: document.getElementById("c_mt").checked, feriadoHE: document.getElementById("c_mf2").checked, recalcular: document.getElementById("c_mr").checked};
+  c.irs = formIrs(); c.irs.depDeficientes = Math.min(c.irs.depDeficientes, c.irs.dependentes);
+  document.querySelectorAll("[data-sh]").forEach(inp => { c.turnos[inp.dataset.sh][+inp.dataset.dw].h = parseNum(inp.value); });
+  document.querySelectorAll("[data-st]").forEach(cb => { c.turnos[cb.dataset.st][+cb.dataset.dw].t = cb.checked; });
+  c.rotacao = {padrao:g("c_rp").toUpperCase().replace(/\s/g,""), inicio:g("c_ri")};
+  c.feriados = {municipal:g("c_mun").trim(), carnaval:document.getElementById("c_car").checked};
+  const optVal = v => v.trim() === "" ? null : parseNum(v);
+  const ck = id => document.getElementById(id).checked;
+  c.subsidios = {modo:g("c_sm"), ferias:{valor: ck("c_sfv_a") ? null : optVal(g("c_sfv")), mes:+g("c_sfm")}, natal:{valor: ck("c_snv_a") ? null : optVal(g("c_snv")), mes:+g("c_snm")}};
+  for(const k in holidayCache) delete holidayCache[k];
+  save(); dlg.close(); render();
+};
+["closeCfg","cancelCfg"].forEach(id => document.getElementById(id).onclick = () => dlg.close());
+["openCfg","openCfg2"].forEach(id => document.getElementById(id).onclick = openCfg);
+
+if(window.matchMedia) ["(max-width: 820px)","(max-width: 520px)"].forEach(q => window.matchMedia(q).addEventListener?.("change", render));
+render();
+</script>
+
+
+</body></html>
