@@ -842,16 +842,16 @@ function openCfg(){
     <label class="f" style="flex-direction:row;align-items:center;gap:8px;margin-top:22px"><input type="checkbox" id="c_car" ${c.feriados.carnaval?"checked":""}> Contar a terça de Carnaval</label>
   </div><p class="note">Os feriados nacionais são marcados automaticamente. Pode desmarcar ou marcar qualquer dia na escala.</p></fieldset>
   <fieldset><legend>Cópia de segurança</legend>
-    <p class="note" style="margin-top:0">Os seus dados ficam guardados só neste navegador. Para os passar para outro dispositivo, copie a cópia de segurança, envie-a para si (por exemplo, por e-mail) e cole-a no outro dispositivo.</p>
-    <div class="toolbar"><button class="btn" type="button" id="exp">Copiar cópia de segurança</button>
-    <label class="btn">Importar ficheiro .json<input type="file" id="imp" accept=".json,application/json,text/plain" hidden></label>
+    <p class="note" style="margin-top:0">Os seus dados ficam guardados só neste navegador e podem perder-se se o navegador limpar os dados do site. Guarde uma cópia num ficheiro sempre que mudar alguma coisa importante; para recuperar ou passar para outro dispositivo, use Carregar cópia de um ficheiro.</p>
+    <div class="toolbar"><button class="btn primary" type="button" id="dl">Guardar cópia num ficheiro</button><button class="btn" type="button" id="exp">Copiar cópia de segurança</button>
+    <label class="btn">Carregar cópia de um ficheiro<input type="file" id="imp" accept=".json,application/json,text/plain" hidden></label>
     <button class="btn danger" type="button" id="wipe">Apagar todos os dados</button></div>
     <label class="f" style="margin-top:10px">Cópia de segurança (texto)
       <textarea class="backup" id="bkText" spellcheck="false" placeholder="Cole aqui uma cópia de segurança e carregue em Importar texto"></textarea></label>
     <div class="toolbar"><button class="btn" type="button" id="bkImport">Importar texto</button></div>
   </fieldset>`;
   updatePreview(); refreshAuto(); refreshIrsInfo();
-  dlg.showModal();
+  dlg.showModal(); cfgDirty = false;
 }
 function updatePreview(){
   const p = document.getElementById("c_rp")?.value.toUpperCase().replace(/\s/g,"").split("").map(ch => SHIFTS.includes(ch)?ch:"-") || [];
@@ -908,6 +908,15 @@ document.getElementById("cfgBody").addEventListener("click", e => {
     const fallback = () => { ta.focus(); ta.select(); toast("Cópia selecionada. Copie-a com Ctrl+C (ou Copiar no telemóvel)."); };
     try{ navigator.clipboard.writeText(txt).then(() => toast("Cópia de segurança copiada."), fallback); }catch(err){ fallback(); }
   }
+  if(e.target.id === "dl"){
+    try{
+      const d = new Date(), nome = `vencimento-copia-${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}.json`;
+      const url = URL.createObjectURL(new Blob([JSON.stringify(state)], {type:"application/json"}));
+      const a = document.createElement("a"); a.href = url; a.download = nome; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      toast(`Cópia guardada na pasta Transferências: ${nome}`);
+    }catch(err){ toast("Não foi possível guardar o ficheiro. Use Copiar cópia de segurança."); }
+  }
   if(e.target.id === "bkImport") importBackup(document.getElementById("bkText").value);
   if(e.target.id === "wipe") ask("Apagar todas as definições e escalas guardadas neste navegador?", {ok:"Apagar tudo", danger:true}, () => {
     state = defaultState(); for(const k in holidayCache) delete holidayCache[k]; save(); dlg.close(); render(); toast("Dados apagados.");
@@ -960,11 +969,23 @@ document.getElementById("saveCfg").onclick = () => {
   for(const k in holidayCache) delete holidayCache[k];
   save(); dlg.close(); render();
 };
-["closeCfg","cancelCfg"].forEach(id => document.getElementById(id).onclick = () => dlg.close());
+let cfgDirty = false;
+document.getElementById("cfgBody").addEventListener("input", () => { cfgDirty = true; });
+document.getElementById("cfgBody").addEventListener("change", e => { if(e.target.id !== "imp") cfgDirty = true; });
+function closeCfgSafe(){
+  if(!cfgDirty){ dlg.close(); return; }
+  ask("Tem alterações nas definições que ainda não foram guardadas.", {ok:"Guardar", alt:"Sair sem guardar"}, r => {
+    if(r === "ok") document.getElementById("saveCfg").click(); else { cfgDirty = false; dlg.close(); }
+  });
+}
+["closeCfg","cancelCfg"].forEach(id => document.getElementById(id).onclick = closeCfgSafe);
+dlg.addEventListener("cancel", e => { if(cfgDirty){ e.preventDefault(); closeCfgSafe(); } });
+dlg.addEventListener("close", () => { cfgDirty = false; });
 ["openCfg","openCfg2"].forEach(id => document.getElementById(id).onclick = openCfg);
 
 if(window.matchMedia) ["(max-width: 820px)","(max-width: 520px)"].forEach(q => window.matchMedia(q).addEventListener?.("change", render));
 render();
+try{ navigator.storage && navigator.storage.persist && navigator.storage.persist(); }catch(e){}
 </script>
 
 
