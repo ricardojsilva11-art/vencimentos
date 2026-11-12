@@ -1,4 +1,5 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><script>(function(){try{var t=localStorage.getItem("vencimento-tema");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+</head><body>
 <title>Vencimento mensal</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -141,11 +142,37 @@ table.shiftcfg{border-collapse:collapse;font-size:13px}
   .rows .row.hnrow .hn{grid-column:1 / span 2;grid-row:2}
 }
 @media print{.toolbar,.btn,header .btn{display:none}}
+
+/* Tema escuro: automático (segue o sistema) ou escolhido no botão Tema */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){color-scheme:dark;
+    --bg:#0F141B; --surface:#171E28; --ink:#E6EBF2; --muted:#9AA5B4; --line:#2A3441; --soft:#1E2631;
+    --accent:#6EA2E6; --pos:#4CC38A; --neg:#F2766B;
+    --m-bg:#3A2E10; --m-ink:#F4CF73; --t-bg:#123329; --t-ink:#7BD8B5; --n-bg:#1D2550; --n-ink:#A9B6F5;
+    --f-bg:#45201D; --f-ink:#F49A90; --v-bg:#2E2343; --v-ink:#C7AEEE;
+    --field:#121922; --hl:#1F2A3A; --hover-line:#3C4859; --on-accent:#0B1220;
+    --warn-bg:#33290F; --warn-line:#6B5520; --backdrop:rgba(0,0,0,.6);
+    --m-line:#B08A2E; --t-line:#3E9C7C; --n-line:#6675C9; --v-line:#8A6BBF;
+  }
+}
+:root[data-theme="dark"]{color-scheme:dark;
+    --bg:#0F141B; --surface:#171E28; --ink:#E6EBF2; --muted:#9AA5B4; --line:#2A3441; --soft:#1E2631;
+    --accent:#6EA2E6; --pos:#4CC38A; --neg:#F2766B;
+    --m-bg:#3A2E10; --m-ink:#F4CF73; --t-bg:#123329; --t-ink:#7BD8B5; --n-bg:#1D2550; --n-ink:#A9B6F5;
+    --f-bg:#45201D; --f-ink:#F49A90; --v-bg:#2E2343; --v-ink:#C7AEEE;
+    --field:#121922; --hl:#1F2A3A; --hover-line:#3C4859; --on-accent:#0B1220;
+    --warn-bg:#33290F; --warn-line:#6B5520; --backdrop:rgba(0,0,0,.6);
+    --m-line:#B08A2E; --t-line:#3E9C7C; --n-line:#6675C9; --v-line:#8A6BBF;
+}
+:where(input,select,textarea){background-color:var(--field);color:var(--ink);border-color:var(--line)}
+.headbtns{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+@media (max-width:600px){header.top{flex-wrap:wrap}.headbtns{justify-content:flex-start}}
+@media print{:root,:root[data-theme]{color-scheme:light;--bg:#fff;--surface:#fff;--ink:#000;--field:#fff;--soft:#EEF2F7;--line:#DCE2EA}}
 </style>
 <div class="wrap">
   <header class="top">
     <h1>Vencimento mensal</h1>
-    <button class="btn" id="openCfg">Definições</button>
+    <span class="headbtns"><button class="btn" id="themeBtn" type="button">◐ Tema: automático</button><button class="btn" id="openCfg">Definições</button></span>
   </header>
 
   <div id="setupBanner" class="banner" hidden>
@@ -989,4 +1016,23 @@ try{ navigator.storage && navigator.storage.persist && navigator.storage.persist
 </script>
 
 
+
+<script>
+(function(){
+  var KEY="vencimento-tema", ORDER=["auto","light","dark"],
+      LABEL={auto:"◐ Tema: automático",light:"☀ Tema: claro",dark:"☾ Tema: escuro"};
+  var btn=document.getElementById("themeBtn"), mq=window.matchMedia("(prefers-color-scheme: dark)");
+  function get(){try{var t=localStorage.getItem(KEY);return (t==="light"||t==="dark")?t:"auto";}catch(e){return "auto";}}
+  function apply(t){
+    var r=document.documentElement;
+    if(t==="auto")r.removeAttribute("data-theme");else r.setAttribute("data-theme",t);
+    var dark=t==="dark"||(t==="auto"&&mq.matches);
+    var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",dark?"#0F141B":"#1D4F91");
+    if(btn){btn.textContent=LABEL[t];btn.title="Mudar tema (automático, claro, escuro)";}
+  }
+  if(btn)btn.onclick=function(){var t=ORDER[(ORDER.indexOf(get())+1)%3];try{if(t==="auto")localStorage.removeItem(KEY);else localStorage.setItem(KEY,t);}catch(e){}apply(t);};
+  if(mq.addEventListener)mq.addEventListener("change",function(){apply(get());});
+  apply(get());
+})();
+</script>
 </body></html>
